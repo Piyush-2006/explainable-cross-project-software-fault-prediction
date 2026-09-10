@@ -1,6 +1,6 @@
 # Explainable Cross-Project Software Fault Prediction and Risk-Based Testing
 
-An explainable machine learning system for predicting software fault risk at the module level, prioritizing testing, and analyzing model explanations across software projects.
+An Explainable AI-based software fault prediction system that predicts module-level defect risk, explains predictions using SHAP, performs cross-project defect prediction, and prioritizes software testing based on risk.
 
 ## 🚀 Live Demo
 
@@ -10,42 +10,62 @@ An explainable machine learning system for predicting software fault risk at the
 
 ---
 
-## 📌 Overview
+## 🖥️ Application Preview
 
-Software projects contain a large number of modules, making it difficult for testing teams to test every module with equal priority.
+### Software Fault Risk Predictor
 
-This project develops an **Explainable AI-based software fault prediction framework** that:
+The dashboard allows users to enter software module metrics and obtain defect-risk predictions.
 
-- Predicts the probability of software defects.
-- Converts predictions into a 0–100 risk score.
-- Classifies modules as LOW, MEDIUM, or HIGH risk.
-- Prioritizes software testing based on predicted risk.
-- Explains predictions using SHAP.
-- Handles class imbalance using SMOTE.
-- Evaluates Cross-Project Defect Prediction (CPDP).
-- Measures explanation consistency across projects.
-- Provides a FastAPI prediction API.
-- Provides an interactive web dashboard.
-- Runs using Docker and is deployed on Render.
+![Software Fault Risk Predictor](dashboard.png)
+
+### Prediction Result & SHAP Explanation
+
+The system provides defect probability, risk score, risk level, testing priority, and SHAP-based explanations.
+
+![Prediction and SHAP Explanation](prediction-shap.png)
+
+### FastAPI Swagger API
+
+The REST API provides endpoints for health monitoring and software fault-risk prediction.
+
+![FastAPI Swagger API](swagger-api.png)
+
+---
+
+## 📌 Problem Statement
+
+Modern software projects contain a large number of modules, making it difficult for development and testing teams to test every module with equal priority.
+
+Software defects are often associated with characteristics such as code size, complexity, branching, operators, operands, comments, and other software metrics.
+
+Traditional testing approaches may spend significant effort testing low-risk modules while fault-prone modules require greater attention.
+
+This project proposes an Explainable AI-based framework that predicts software module defect risk, explains the predictions, and prioritizes testing activities.
+
+The project also investigates **Cross-Project Defect Prediction (CPDP)** to determine whether a model trained on one software project can generalize to another project.
 
 ---
 
 ## 🎯 Objectives
 
-The main objectives of this project are:
+The main objectives of the project are to:
 
-1. Analyze software metrics associated with defective modules.
-2. Clean and preprocess software defect datasets.
-3. Compare different machine learning algorithms.
-4. Handle class imbalance using SMOTE.
-5. Optimize the classification threshold using validation data.
-6. Predict module-level defect probability.
-7. Generate module-level risk scores.
-8. Prioritize software testing.
-9. Explain predictions using SHAP.
-10. Evaluate Cross-Project Defect Prediction.
-11. Analyze explanation consistency across CPDP directions.
-12. Deploy the prediction system through an API and web dashboard.
+- Analyze software metrics associated with software defects.
+- Preprocess and clean software defect datasets.
+- Compare multiple machine learning algorithms.
+- Handle class imbalance using SMOTE.
+- Optimize the classification threshold using validation data.
+- Predict module-level defect probability.
+- Generate a 0–100 risk score.
+- Classify modules into LOW, MEDIUM, and HIGH risk.
+- Prioritize software testing based on predicted risk.
+- Explain predictions using SHAP.
+- Evaluate Cross-Project Defect Prediction.
+- Analyze explanation consistency across projects.
+- Provide a FastAPI-based prediction API.
+- Provide an interactive web dashboard.
+- Containerize the application using Docker.
+- Deploy the system using Render.
 
 ---
 
@@ -64,7 +84,7 @@ How consistent are SHAP feature explanations across different cross-project pred
 
 ## 📊 Datasets
 
-The project uses software defect datasets from the NASA/PROMISE software defect dataset collection.
+The experiments use software defect datasets from the NASA/PROMISE software defect dataset collection.
 
 ### Projects Used
 

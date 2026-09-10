@@ -1,101 +1,166 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Software Fault Risk Prediction</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Software Fault Risk Predictor</title>
+
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
+            margin: 0;
             font-family: Arial, sans-serif;
             background: #f4f6f8;
-            margin: 0;
-            padding: 30px;
+            color: #222;
         }
 
         .container {
-            max-width: 1000px;
-            margin: auto;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
         }
 
         .card {
             background: white;
             padding: 25px;
-            margin-bottom: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            color: #666;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             margin-bottom: 25px;
         }
 
-        .grid {
+        .metrics {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            gap: 15px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 6px;
         }
 
         input {
-            width: 100%;
-            padding: 9px;
-            margin-top: 5px;
-            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #555;
         }
 
         button {
-            margin-top: 20px;
-            padding: 12px 25px;
-            background: #222;
-            color: white;
+            width: 100%;
+            margin-top: 25px;
+            padding: 14px;
             border: none;
-            border-radius: 6px;
+            border-radius: 7px;
+            background: #111827;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
         }
 
-        .results {
+        button:hover {
+            background: #374151;
+        }
+
+        .result-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
+            gap: 15px;
         }
 
-        .result {
-            background: #f1f3f5;
+        .result-box {
             padding: 20px;
+            border-radius: 10px;
+            background: #f1f5f9;
             text-align: center;
-            border-radius: 8px;
         }
 
-        .result h3 {
+        .result-box h3 {
+            margin: 0 0 10px;
             font-size: 14px;
             color: #666;
         }
 
-        .result p {
-            font-size: 22px;
+        .result-box p {
+            margin: 0;
+            font-size: 24px;
             font-weight: bold;
         }
 
         .explanation {
+            margin-top: 20px;
+        }
+
+        .factor {
             padding: 12px;
             margin: 8px 0;
-            background: #f1f3f5;
-            border-radius: 6px;
+            border-radius: 7px;
+            background: #f8fafc;
+            border-left: 4px solid #64748b;
         }
 
-        .high {
-            color: #d32f2f;
+        .error {
+            color: #b91c1c;
+            background: #fee2e2;
+            padding: 12px;
+            border-radius: 7px;
+            margin-top: 15px;
+            display: none;
         }
 
-        .medium {
-            color: #f57c00;
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            color: #555;
         }
 
-        .low {
-            color: #388e3c;
+        @media (max-width: 800px) {
+            .metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .result-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .metrics,
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                margin: 15px auto;
+            }
         }
     </style>
 </head>
@@ -104,101 +169,122 @@
 
 <div class="container">
 
-    <h1>Software Fault Risk Prediction</h1>
+    <h1>Explainable Software Fault Risk Predictor</h1>
 
     <div class="subtitle">
-        Explainable Machine Learning using Random Forest + SMOTE + SHAP
+        Machine Learning + SMOTE + Random Forest + SHAP
     </div>
 
     <div class="card">
 
         <h2>Software Module Metrics</h2>
 
-        <div class="grid">
+        <div class="metrics">
 
-            <label>LOC
-                <input id="loc" value="10">
-            </label>
+            <div class="field">
+                <label>LOC</label>
+                <input id="loc" type="number" step="any" value="20">
+            </div>
 
-            <label>v(g)
-                <input id="vg" value="2">
-            </label>
+            <div class="field">
+                <label>v(g)</label>
+                <input id="vg" type="number" step="any" value="5">
+            </div>
 
-            <label>ev(g)
-                <input id="evg" value="1">
-            </label>
+            <div class="field">
+                <label>ev(g)</label>
+                <input id="evg" type="number" step="any" value="3">
+            </div>
 
-            <label>iv(g)
-                <input id="ivg" value="2">
-            </label>
+            <div class="field">
+                <label>iv(g)</label>
+                <input id="ivg" type="number" step="any" value="4">
+            </div>
 
-            <label>n
-                <input id="n" value="20">
-            </label>
+            <div class="field">
+                <label>n</label>
+                <input id="n" type="number" step="any" value="30">
+            </div>
 
-            <label>v
-                <input id="v" value="50">
-            </label>
+            <div class="field">
+                <label>Volume (v)</label>
+                <input id="v" type="number" step="any" value="100">
+            </div>
 
-            <label>l
-                <input id="l" value="0.5">
-            </label>
+            <div class="field">
+                <label>Length (l)</label>
+                <input id="l" type="number" step="any" value="10">
+            </div>
 
-            <label>d
-                <input id="d" value="25">
-            </label>
+            <div class="field">
+                <label>Difficulty (d)</label>
+                <input id="d" type="number" step="any" value="5">
+            </div>
 
-            <label>i
-                <input id="i" value="2">
-            </label>
+            <div class="field">
+                <label>Intelligence (i)</label>
+                <input id="i" type="number" step="any" value="20">
+            </div>
 
-            <label>e
-                <input id="e" value="1000">
-            </label>
+            <div class="field">
+                <label>Effort (e)</label>
+                <input id="e" type="number" step="any" value="500">
+            </div>
 
-            <label>b
-                <input id="b" value="0.1">
-            </label>
+            <div class="field">
+                <label>Bug Estimate (b)</label>
+                <input id="b" type="number" step="any" value="0.5">
+            </div>
 
-            <label>t
-                <input id="t" value="50">
-            </label>
+            <div class="field">
+                <label>Time (t)</label>
+                <input id="t" type="number" step="any" value="30">
+            </div>
 
-            <label>lOCode
-                <input id="lOCode" value="10">
-            </label>
+            <div class="field">
+                <label>Lines of Code</label>
+                <input id="lOCode" type="number" step="any" value="20">
+            </div>
 
-            <label>lOComment
-                <input id="lOComment" value="2">
-            </label>
+            <div class="field">
+                <label>Lines of Comment</label>
+                <input id="lOComment" type="number" step="any" value="2">
+            </div>
 
-            <label>lOBlank
-                <input id="lOBlank" value="2">
-            </label>
+            <div class="field">
+                <label>Blank Lines</label>
+                <input id="lOBlank" type="number" step="any" value="3">
+            </div>
 
-            <label>locCodeAndComment
-                <input id="locCodeAndComment" value="2">
-            </label>
+            <div class="field">
+                <label>Code + Comment</label>
+                <input id="locCodeAndComment" type="number" step="any" value="22">
+            </div>
 
-            <label>uniq_Op
-                <input id="uniq_Op" value="5">
-            </label>
+            <div class="field">
+                <label>Unique Operators</label>
+                <input id="uniq_Op" type="number" step="any" value="10">
+            </div>
 
-            <label>uniq_Opnd
-                <input id="uniq_Opnd" value="8">
-            </label>
+            <div class="field">
+                <label>Unique Operands</label>
+                <input id="uniq_Opnd" type="number" step="any" value="15">
+            </div>
 
-            <label>total_Op
-                <input id="total_Op" value="12">
-            </label>
+            <div class="field">
+                <label>Total Operators</label>
+                <input id="total_Op" type="number" step="any" value="30">
+            </div>
 
-            <label>total_Opnd
-                <input id="total_Opnd" value="10">
-            </label>
+            <div class="field">
+                <label>Total Operands</label>
+                <input id="total_Opnd" type="number" step="any" value="35">
+            </div>
 
-            <label>branchCount
-                <input id="branchCount" value="3">
-            </label>
+            <div class="field">
+                <label>Branch Count</label>
+                <input id="branchCount" type="number" step="any" value="5">
+            </div>
 
         </div>
 
@@ -206,35 +292,39 @@
             Predict Fault Risk
         </button>
 
-        <p id="error"></p>
+        <div class="loading" id="loading">
+            Predicting...
+        </div>
+
+        <div class="error" id="error"></div>
 
     </div>
 
 
-    <div id="resultCard" class="card" style="display:none">
+    <div class="card">
 
         <h2>Prediction Result</h2>
 
-        <div class="results">
+        <div class="result-grid">
 
-            <div class="result">
+            <div class="result-box">
                 <h3>Defect Probability</h3>
-                <p id="probability">-</p>
+                <p id="probability">--</p>
             </div>
 
-            <div class="result">
+            <div class="result-box">
                 <h3>Risk Score</h3>
-                <p id="riskScore">-</p>
+                <p id="riskScore">--</p>
             </div>
 
-            <div class="result">
+            <div class="result-box">
                 <h3>Risk Level</h3>
-                <p id="riskLevel">-</p>
+                <p id="riskLevel">--</p>
             </div>
 
-            <div class="result">
+            <div class="result-box">
                 <h3>Testing Priority</h3>
-                <p id="priority">-</p>
+                <p id="priority">--</p>
             </div>
 
         </div>
@@ -242,11 +332,17 @@
     </div>
 
 
-    <div id="explanationCard" class="card" style="display:none">
+    <div class="card explanation">
 
         <h2>SHAP Explanation</h2>
 
-        <div id="explanation"></div>
+        <p>
+            Top factors influencing the model prediction:
+        </p>
+
+        <div id="shapFactors">
+            Prediction explanations will appear here.
+        </div>
 
     </div>
 
@@ -257,45 +353,81 @@
 
 async function predictRisk() {
 
-    const fields = [
-        "loc",
-        "vg",
-        "evg",
-        "ivg",
-        "n",
-        "v",
-        "l",
-        "d",
-        "i",
-        "e",
-        "b",
-        "t",
-        "lOCode",
-        "lOComment",
-        "lOBlank",
-        "locCodeAndComment",
-        "uniq_Op",
-        "uniq_Opnd",
-        "total_Op",
-        "total_Opnd",
-        "branchCount"
-    ];
+    const errorBox = document.getElementById("error");
+    const loading = document.getElementById("loading");
 
-    const data = {};
-
-    fields.forEach(function(field) {
-
-        data[field] = Number(
-            document.getElementById(field).value
-        );
-
-    });
-
+    errorBox.style.display = "none";
+    loading.style.display = "block";
 
     try {
 
+        /*
+         * Empty API URL means:
+         * use the same domain from which this dashboard is loaded.
+         *
+         * Local:
+         * http://127.0.0.1:8000/predict
+         *
+         * Render:
+         * https://your-app.onrender.com/predict
+         */
+        const API_URL = "";
+
+        const data = {
+
+            loc: Number(document.getElementById("loc").value),
+
+            vg: Number(document.getElementById("vg").value),
+
+            evg: Number(document.getElementById("evg").value),
+
+            ivg: Number(document.getElementById("ivg").value),
+
+            n: Number(document.getElementById("n").value),
+
+            v: Number(document.getElementById("v").value),
+
+            l: Number(document.getElementById("l").value),
+
+            d: Number(document.getElementById("d").value),
+
+            i: Number(document.getElementById("i").value),
+
+            e: Number(document.getElementById("e").value),
+
+            b: Number(document.getElementById("b").value),
+
+            t: Number(document.getElementById("t").value),
+
+            lOCode: Number(document.getElementById("lOCode").value),
+
+            lOComment: Number(document.getElementById("lOComment").value),
+
+            lOBlank: Number(document.getElementById("lOBlank").value),
+
+            locCodeAndComment:
+                Number(document.getElementById("locCodeAndComment").value),
+
+            uniq_Op:
+                Number(document.getElementById("uniq_Op").value),
+
+            uniq_Opnd:
+                Number(document.getElementById("uniq_Opnd").value),
+
+            total_Op:
+                Number(document.getElementById("total_Op").value),
+
+            total_Opnd:
+                Number(document.getElementById("total_Opnd").value),
+
+            branchCount:
+                Number(document.getElementById("branchCount").value)
+
+        };
+
+
         const response = await fetch(
-            "http://127.0.0.1:8000/predict",
+            API_URL + "/predict",
             {
                 method: "POST",
 
@@ -310,104 +442,110 @@ async function predictRisk() {
 
         if (!response.ok) {
 
-            throw new Error(
-                "API error: " + response.status
-            );
+            const text = await response.text();
 
+            throw new Error(
+                "API error " +
+                response.status +
+                ": " +
+                text
+            );
         }
 
 
         const result = await response.json();
 
 
-        document.getElementById(
-            "resultCard"
-        ).style.display = "block";
+        document.getElementById("probability").textContent =
+            Number(result.defect_probability).toFixed(2) + "%";
 
 
-        document.getElementById(
-            "explanationCard"
-        ).style.display = "block";
+        document.getElementById("riskScore").textContent =
+            Number(result.risk_score).toFixed(2) + "/100";
 
 
-        document.getElementById(
-            "probability"
-        ).innerText =
-            (result.defect_probability * 100).toFixed(2) + "%";
-
-
-        document.getElementById(
-            "riskScore"
-        ).innerText =
-            result.risk_score.toFixed(2) + "/100";
-
-
-        const riskLevel =
-            document.getElementById("riskLevel");
-
-
-        riskLevel.innerText =
+        document.getElementById("riskLevel").textContent =
             result.risk_level;
 
 
-        riskLevel.className =
-            result.risk_level.toLowerCase();
-
-
-        document.getElementById(
-            "priority"
-        ).innerText =
+        document.getElementById("priority").textContent =
             result.testing_priority;
 
 
-        const explanation =
-            document.getElementById("explanation");
+        const shapContainer =
+            document.getElementById("shapFactors");
+
+        shapContainer.innerHTML = "";
 
 
-        explanation.innerHTML = "";
+        if (
+            result.shap_explanation &&
+            Array.isArray(result.shap_explanation)
+        ) {
+
+            result.shap_explanation.forEach(
+                function(factor) {
+
+                    const div =
+                        document.createElement("div");
+
+                    div.className = "factor";
 
 
-        result.explanation.forEach(
-            function(item) {
+                    const feature =
+                        factor.feature || "Feature";
 
-                const div =
-                    document.createElement("div");
-
-
-                div.className =
-                    "explanation";
+                    const contribution =
+                        Number(
+                            factor.contribution || 0
+                        );
 
 
-                const effect =
-                    item.shap_value >= 0
-                    ? "↑ increases risk"
-                    : "↓ decreases risk";
+                    const direction =
+                        contribution >= 0
+                            ? "↑ increases risk"
+                            : "↓ decreases risk";
 
 
-                div.innerHTML =
-                    "<strong>" +
-                    item.feature +
-                    "</strong> " +
-                    effect +
-                    " (" +
-                    item.shap_value.toFixed(4) +
-                    ")";
+                    div.innerHTML =
+                        "<strong>" +
+                        feature +
+                        "</strong> " +
+                        direction +
+                        " (" +
+                        contribution.toFixed(4) +
+                        ")";
 
 
-                explanation.appendChild(div);
+                    shapContainer.appendChild(div);
 
-            }
-        );
+                }
+            );
 
+        } else {
 
-    } catch (error) {
+            shapContainer.textContent =
+                "SHAP explanation not available.";
 
-        document.getElementById(
-            "error"
-        ).innerText =
-            "Cannot connect to FastAPI. Start the API on port 8000.";
+        }
+
+    }
+
+    catch (error) {
 
         console.error(error);
+
+        errorBox.textContent =
+            "Unable to connect to the prediction API. " +
+            error.message;
+
+        errorBox.style.display = "block";
+
+    }
+
+    finally {
+
+        loading.style.display = "none";
 
     }
 

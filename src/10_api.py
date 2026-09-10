@@ -1,4 +1,5 @@
-import os
+from pathlib import Path
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -6,6 +7,7 @@ import shap
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 
@@ -13,26 +15,21 @@ from pydantic import BaseModel
 # Paths
 # ============================================================
 
-MODEL_PATH = "data/processed/fault_prediction_model.pkl"
-FEATURES_PATH = "data/processed/model_features.pkl"
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+MODEL_PATH = BASE_DIR / "data" / "processed" / "fault_prediction_model.pkl"
+FEATURES_PATH = BASE_DIR / "data" / "processed" / "model_features.pkl"
+DASHBOARD_PATH = BASE_DIR / "dashboard" / "index.html"
 
 
 # ============================================================
-# Load trained model
+# Load model
 # ============================================================
-
-if not os.path.exists(MODEL_PATH):
-    raise FileNotFoundError(
-        f"Model file not found: {MODEL_PATH}"
-    )
-
-if not os.path.exists(FEATURES_PATH):
-    raise FileNotFoundError(
-        f"Feature file not found: {FEATURES_PATH}"
-    )
 
 model = joblib.load(MODEL_PATH)
-feature_names = joblib.load(FEATURES_PATH)
+model_features = joblib.load(FEATURES_PATH)
+
+explainer = shap.TreeExplainer(model)
 
 
 # ============================================================
@@ -40,15 +37,14 @@ feature_names = joblib.load(FEATURES_PATH)
 # ============================================================
 
 app = FastAPI(
-    title="Software Fault Risk Prediction API",
-    description="Explainable Software Fault Risk Prediction using Random Forest, SMOTE and SHAP",
-    version="1.0"
+    title="Explainable Software Fault Risk Prediction API",
+    description="Machine learning based software fault prediction with SHAP explanations.",
+    version="1.0.0"
 )
 
 
 # ============================================================
 # CORS
-# Allows dashboard/index.html to communicate with FastAPI
 # ============================================================
 
 app.add_middleware(
@@ -61,7 +57,7 @@ app.add_middleware(
 
 
 # ============================================================
-# Input data model
+# Input schema
 # ============================================================
 
 class ModuleMetrics(BaseModel):
@@ -70,7 +66,6 @@ class ModuleMetrics(BaseModel):
     vg: float
     evg: float
     ivg: float
-
     n: float
     v: float
     l: float
@@ -94,30 +89,33 @@ class ModuleMetrics(BaseModel):
 
 
 # ============================================================
-# Health check
+# Root route - Dashboard
 # ============================================================
 
 @app.get("/")
 def home():
+    return FileResponse(DASHBOARD_PATH)
 
+
+# ============================================================
+# Health check
+# ============================================================
+
+@app.get("/health")
+def health():
     return {
-        "project": "Explainable Software Fault Risk Prediction",
-        "status": "API is running",
+        "status": "healthy",
         "model": "Random Forest + SMOTE",
         "explainability": "SHAP"
     }
 
 
 # ============================================================
-# Prediction endpoint
+# Prediction
 # ============================================================
 
 @app.post("/predict")
-def predict_fault_risk(data: ModuleMetrics):
-
-    # --------------------------------------------------------
-    # Convert API input to dictionary
-    # --------------------------------------------------------
+def predict_fault(data: ModuleMetrics):
 
     input_data = {
         "loc": data.loc,
@@ -143,27 +141,24 @@ def predict_fault_risk(data: ModuleMetrics):
         "branchCount": data.branchCount
     }
 
-    # --------------------------------------------------------
-    # Create DataFrame using exact model feature order
-    # --------------------------------------------------------
-
+    # Create DataFrame in exact model feature order
     X = pd.DataFrame([input_data])
 
-    X = X.reindex(columns=feature_names)
+    X = X[model_features]
 
     # --------------------------------------------------------
-    # Predict probability
+    # Prediction probability
     # --------------------------------------------------------
 
-    probability = float(
-        model.predict_proba(X)[0][1]
-    )
+    probability = float(model.predict_proba(X)[0][1])
+
+    probability_percent = probability * 100
 
     # --------------------------------------------------------
     # Risk score
     # --------------------------------------------------------
 
-    risk_score = round(probability * 100, 2)
+    risk_score = probability_percent
 
     # --------------------------------------------------------
     # Risk level
@@ -185,95 +180,82 @@ def predict_fault_risk(data: ModuleMetrics):
     # SHAP explanation
     # --------------------------------------------------------
 
-    explanation = []
+    shap_values = explainer.shap_values(X)
 
-    try:
+    # Handle different SHAP output formats
+    if isinstance(shap_values, list):
 
-        explainer = shap.TreeExplainer(model)
-
-        shap_values = explainer.shap_values(X)
-
-        # Handle different SHAP output formats
-        if isinstance(shap_values, list):
-
-            # Binary classification:
-            # index 1 = defect class
-            if len(shap_values) > 1:
-                values = np.asarray(shap_values[1])[0]
-            else:
-                values = np.asarray(shap_values[0])[0]
-
+        if len(shap_values) > 1:
+            shap_array = np.asarray(shap_values[1])
         else:
+            shap_array = np.asarray(shap_values[0])
 
-            values = np.asarray(shap_values)
+    else:
 
-            # Possible shape:
-            # (1, features, classes)
-            if values.ndim == 3:
+        shap_array = np.asarray(shap_values)
 
-                if values.shape[2] > 1:
-                    values = values[0, :, 1]
-                else:
-                    values = values[0, :, 0]
+        # Handle possible 3D output
+        if shap_array.ndim == 3:
 
-            # Possible shape:
-            # (1, features)
-            elif values.ndim == 2:
+            if shap_array.shape[-1] == 2:
+                shap_array = shap_array[:, :, 1]
 
-                values = values[0]
+            elif shap_array.shape[0] == 2:
+                shap_array = shap_array[1]
 
-            # Possible shape:
-            # (features,)
-            elif values.ndim == 1:
+    shap_array = np.asarray(shap_array).reshape(-1)
 
-                values = values
+    # --------------------------------------------------------
+    # Top 5 SHAP factors
+    # --------------------------------------------------------
 
-        # Make sure the number of SHAP values matches features
-        values = np.asarray(values).flatten()
+    feature_names = list(X.columns)
 
-        if len(values) == len(feature_names):
+    shap_pairs = list(
+        zip(feature_names, shap_array)
+    )
 
-            shap_data = []
+    shap_pairs.sort(
+        key=lambda x: abs(float(x[1])),
+        reverse=True
+    )
 
-            for feature, value in zip(feature_names, values):
+    top_factors = []
 
-                shap_data.append({
-                    "feature": feature,
-                    "shap_value": round(float(value), 4),
-                    "effect": (
-                        "increases risk"
-                        if value > 0
-                        else "decreases risk"
-                    )
-                })
+    for feature, contribution in shap_pairs[:5]:
 
-            # Sort by absolute SHAP impact
-            shap_data.sort(
-                key=lambda x: abs(x["shap_value"]),
-                reverse=True
-            )
+        contribution = float(contribution)
 
-            # Return top 5 factors
-            explanation = shap_data[:5]
-
-    except Exception as error:
-
-        explanation = [
+        top_factors.append(
             {
-                "feature": "SHAP",
-                "shap_value": 0,
-                "effect": f"Explanation unavailable: {str(error)}"
+                "feature": feature,
+                "contribution": round(contribution, 4),
+                "direction": (
+                    "increases risk"
+                    if contribution > 0
+                    else "decreases risk"
+                )
             }
-        ]
+        )
 
     # --------------------------------------------------------
     # Final response
     # --------------------------------------------------------
 
     return {
-        "defect_probability": round(probability, 4),
-        "risk_score": risk_score,
+        "defect_probability": round(
+            probability_percent,
+            2
+        ),
+
+        "risk_score": round(
+            risk_score,
+            2
+        ),
+
         "risk_level": risk_level,
+
         "testing_priority": testing_priority,
-        "explanation": explanation
+
+        "shap_explanation": top_factors
     }

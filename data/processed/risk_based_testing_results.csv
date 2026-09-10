@@ -1,0 +1,9 @@
+train_project,test_project,top_percent,modules_tested,defects_found,total_defects,recall_at_top_k
+CM1,JM1,10,891,301,2007,0.15
+CM1,JM1,20,1782,594,2007,0.296
+CM1,JM1,30,2673,873,2007,0.435
+CM1,JM1,50,4456,1360,2007,0.6776
+JM1,CM1,10,44,10,48,0.2083
+JM1,CM1,20,88,21,48,0.4375
+JM1,CM1,30,132,26,48,0.5417
+JM1,CM1,50,221,39,48,0.8125

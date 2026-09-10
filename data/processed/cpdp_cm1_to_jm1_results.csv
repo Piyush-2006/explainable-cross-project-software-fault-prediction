@@ -1,0 +1,2 @@
+train_project,test_project,model,threshold,accuracy,precision,recall,f1,roc_auc,pr_auc
+CM1,JM1,Random Forest + SMOTE,0.3,0.7498877917414721,0.3512064343163539,0.13054309915296464,0.1903378132945877,0.6330089797944702,0.31110541537803016

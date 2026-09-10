@@ -1,0 +1,419 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Software Fault Risk Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        input {
+            width: 100%;
+            padding: 9px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            background: #222;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .result {
+            background: #f1f3f5;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        .result h3 {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .result p {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .explanation {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f1f3f5;
+            border-radius: 6px;
+        }
+
+        .high {
+            color: #d32f2f;
+        }
+
+        .medium {
+            color: #f57c00;
+        }
+
+        .low {
+            color: #388e3c;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Software Fault Risk Prediction</h1>
+
+    <div class="subtitle">
+        Explainable Machine Learning using Random Forest + SMOTE + SHAP
+    </div>
+
+    <div class="card">
+
+        <h2>Software Module Metrics</h2>
+
+        <div class="grid">
+
+            <label>LOC
+                <input id="loc" value="10">
+            </label>
+
+            <label>v(g)
+                <input id="vg" value="2">
+            </label>
+
+            <label>ev(g)
+                <input id="evg" value="1">
+            </label>
+
+            <label>iv(g)
+                <input id="ivg" value="2">
+            </label>
+
+            <label>n
+                <input id="n" value="20">
+            </label>
+
+            <label>v
+                <input id="v" value="50">
+            </label>
+
+            <label>l
+                <input id="l" value="0.5">
+            </label>
+
+            <label>d
+                <input id="d" value="25">
+            </label>
+
+            <label>i
+                <input id="i" value="2">
+            </label>
+
+            <label>e
+                <input id="e" value="1000">
+            </label>
+
+            <label>b
+                <input id="b" value="0.1">
+            </label>
+
+            <label>t
+                <input id="t" value="50">
+            </label>
+
+            <label>lOCode
+                <input id="lOCode" value="10">
+            </label>
+
+            <label>lOComment
+                <input id="lOComment" value="2">
+            </label>
+
+            <label>lOBlank
+                <input id="lOBlank" value="2">
+            </label>
+
+            <label>locCodeAndComment
+                <input id="locCodeAndComment" value="2">
+            </label>
+
+            <label>uniq_Op
+                <input id="uniq_Op" value="5">
+            </label>
+
+            <label>uniq_Opnd
+                <input id="uniq_Opnd" value="8">
+            </label>
+
+            <label>total_Op
+                <input id="total_Op" value="12">
+            </label>
+
+            <label>total_Opnd
+                <input id="total_Opnd" value="10">
+            </label>
+
+            <label>branchCount
+                <input id="branchCount" value="3">
+            </label>
+
+        </div>
+
+        <button onclick="predictRisk()">
+            Predict Fault Risk
+        </button>
+
+        <p id="error"></p>
+
+    </div>
+
+
+    <div id="resultCard" class="card" style="display:none">
+
+        <h2>Prediction Result</h2>
+
+        <div class="results">
+
+            <div class="result">
+                <h3>Defect Probability</h3>
+                <p id="probability">-</p>
+            </div>
+
+            <div class="result">
+                <h3>Risk Score</h3>
+                <p id="riskScore">-</p>
+            </div>
+
+            <div class="result">
+                <h3>Risk Level</h3>
+                <p id="riskLevel">-</p>
+            </div>
+
+            <div class="result">
+                <h3>Testing Priority</h3>
+                <p id="priority">-</p>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div id="explanationCard" class="card" style="display:none">
+
+        <h2>SHAP Explanation</h2>
+
+        <div id="explanation"></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+async function predictRisk() {
+
+    const fields = [
+        "loc",
+        "vg",
+        "evg",
+        "ivg",
+        "n",
+        "v",
+        "l",
+        "d",
+        "i",
+        "e",
+        "b",
+        "t",
+        "lOCode",
+        "lOComment",
+        "lOBlank",
+        "locCodeAndComment",
+        "uniq_Op",
+        "uniq_Opnd",
+        "total_Op",
+        "total_Opnd",
+        "branchCount"
+    ];
+
+    const data = {};
+
+    fields.forEach(function(field) {
+
+        data[field] = Number(
+            document.getElementById(field).value
+        );
+
+    });
+
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/predict",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(data)
+            }
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "API error: " + response.status
+            );
+
+        }
+
+
+        const result = await response.json();
+
+
+        document.getElementById(
+            "resultCard"
+        ).style.display = "block";
+
+
+        document.getElementById(
+            "explanationCard"
+        ).style.display = "block";
+
+
+        document.getElementById(
+            "probability"
+        ).innerText =
+            (result.defect_probability * 100).toFixed(2) + "%";
+
+
+        document.getElementById(
+            "riskScore"
+        ).innerText =
+            result.risk_score.toFixed(2) + "/100";
+
+
+        const riskLevel =
+            document.getElementById("riskLevel");
+
+
+        riskLevel.innerText =
+            result.risk_level;
+
+
+        riskLevel.className =
+            result.risk_level.toLowerCase();
+
+
+        document.getElementById(
+            "priority"
+        ).innerText =
+            result.testing_priority;
+
+
+        const explanation =
+            document.getElementById("explanation");
+
+
+        explanation.innerHTML = "";
+
+
+        result.explanation.forEach(
+            function(item) {
+
+                const div =
+                    document.createElement("div");
+
+
+                div.className =
+                    "explanation";
+
+
+                const effect =
+                    item.shap_value >= 0
+                    ? "↑ increases risk"
+                    : "↓ decreases risk";
+
+
+                div.innerHTML =
+                    "<strong>" +
+                    item.feature +
+                    "</strong> " +
+                    effect +
+                    " (" +
+                    item.shap_value.toFixed(4) +
+                    ")";
+
+
+                explanation.appendChild(div);
+
+            }
+        );
+
+
+    } catch (error) {
+
+        document.getElementById(
+            "error"
+        ).innerText =
+            "Cannot connect to FastAPI. Start the API on port 8000.";
+
+        console.error(error);
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,3 @@
+train_project,test_project,model,threshold,accuracy,precision,recall,f1,roc_auc,pr_auc,recall_top_10,recall_top_20,recall_top_30,recall_top_50
+CM1,JM1,Random Forest + SMOTE,0.3,74.99,35.12,13.05,19.03,63.3,31.11,15.0,29.6,43.5,67.76
+JM1,CM1,Random Forest + SMOTE,0.3,56.56,17.57,81.25,28.89,73.37,23.45,20.83,43.75,54.17,81.25

@@ -1,0 +1,2 @@
+comparison,top5_common_features,top5_overlap_percent,top10_common_features,top10_overlap_percent,spearman_correlation,p_value,interpretation
+CM1 → JM1 vs JM1 → CM1,2,40.0,7,70.0,0.2325,0.3106,Low explanation consistency
